@@ -6,6 +6,8 @@ kmp_lloyd:
 
 hst_lloyd:
 	g++ -o hst_lloyd hst_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+hst_lloyd_mix:
+	g++ -o hst_lloyd_mix hst_lloyd_mix.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
 clean:
 	rm -rf random_lloyd kmp_lloyd hst_lloyd
