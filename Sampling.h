@@ -21,13 +21,21 @@ using namespace std;
 class Sampling{
 public:
     Sampling(string);
+	Sampling(vector<Point>);
+	~Sampling();
+	void reset_pools();
+	Point next_point();
     vector<Point> d2_sample(vector<Point>,int);
 	vector<Point> uniform_sample(int);
 	vector<int> sample_indices(discrete_distribution<>,int);
 	vector<Point> pick_points(vector<int>);
 protected:
     string file_name;
+	ifstream file;
+	vector<Point> pool;
+	int counter;
 	int num_pts;
+	bool mode;
 };
 
 #endif

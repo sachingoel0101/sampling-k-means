@@ -31,6 +31,7 @@ int main(int argc,char* argv[]) {
 		cout<<tmp.get_label();
 		p.push_back(tmp);
 	}
+	sampler.~Sampling();
 	gettimeofday(&end,NULL);
 	cout<<"Initialization time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
 	vector<double> costs;
