@@ -1,15 +1,19 @@
 random_lloyd:
-	g++ -o random_lloyd random_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+	g++ -o random_lloyd random_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11 -g
 
 kmp_lloyd:
 	g++ -o kmp_lloyd kmp_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
-hst_lloyd:
-	g++ -o hst_lloyd hst_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
-hst_lloyd_mix:
-	g++ -o hst_lloyd_mix hst_lloyd_mix.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+top_m_lloyd:
+	g++ -o top_m_lloyd top_m_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+
+top_m_mixed_lloyd:
+	g++ -o top_m_mized_lloyd top_m_mixed_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+
+level2_d2_lloyd:
+	g++ -o level2_d2_lloyd level2_d2_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
 clean:
-	rm -rf random_lloyd kmp_lloyd hst_lloyd
+	rm -rf random_lloyd kmp_lloyd top_m_lloyd top_m_mixed_lloyd level2_d2_lloyd
 
-all: random_lloyd kmp_lloyd hst_lloyd
+all: random_lloyd kmp_lloyd top_m_lloyd top_m_mixed_lloyd level2_d2_lloyd
