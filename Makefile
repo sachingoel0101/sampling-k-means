@@ -1,5 +1,5 @@
 random_lloyd:
-	g++ -o random_lloyd random_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11 -g
+	g++ -o random_lloyd random_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
 kmp_lloyd:
 	g++ -o kmp_lloyd kmp_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11

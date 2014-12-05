@@ -23,6 +23,7 @@ public:
     Sampling(string);
 	Sampling(vector<Point>);
 	~Sampling();
+	void close_file();
 	void reset_pools();
 	Point next_point();
     vector<Point> d2_sample(vector<Point>,int);

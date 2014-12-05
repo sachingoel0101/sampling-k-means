@@ -98,6 +98,6 @@ vector<Point> Heuristic::h2_subset(vector<Point> sampled_set,int k){
 		Point tmp=s.d2_sample(ret_val,1)[0];
 		ret_val.push_back(tmp);
 	}
-	s.~Sampling();
+	s.close_file();
 	return ret_val;
 }

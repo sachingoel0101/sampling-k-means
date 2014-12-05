@@ -32,7 +32,7 @@ int main(int argc,char* argv[]) {
 		p.push_back(h.h1_center(sampler.d2_sample(p,n_val),numcluster-i));
 	}
 	gettimeofday(&end,NULL);
-	sampler.~Sampling();
+	sampler.close_file();
 	cout<<"Initialization time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
 	vector<double> costs;
 	Cluster c1(argv[1],p);

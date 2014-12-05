@@ -25,7 +25,7 @@ int main(int argc,char* argv[]) {
 	gettimeofday(&start,NULL);
 	Sampling sampler(argv[1]);
 	vector<Point> p=sampler.uniform_sample(stoi(argv[2]));
-	sampler.~Sampling();
+	sampler.close_file();
 	gettimeofday(&end,NULL);
 	cout<<"Initialization time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
 	vector<double> costs;

@@ -21,11 +21,14 @@ Sampling::Sampling(vector<Point> __pool){
 	pool=__pool;
 	num_pts=pool.size();
 }
-
+// we won't use the deconstructor as such. It causes problems
 Sampling::~Sampling(){
 	if(mode) file.close();
 }
-
+// instead we'll just close the file itself. Let the RAII handle the deconstruction of Sampling object itself.
+void Sampling::close_file(){
+	if(mode) file.close();
+}
 void Sampling::reset_pools(){
 	if(mode){
 		file.clear();
