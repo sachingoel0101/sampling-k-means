@@ -28,7 +28,6 @@ int main(int argc,char* argv[]) {
 	vector<Point> p;
 	for(int i=0;i<numcluster;i++){
 		Point tmp=sampler.d2_sample(p,1)[0];
-		cout<<tmp.get_label();
 		p.push_back(tmp);
 	}
 	sampler.close_file();
