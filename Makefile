@@ -8,7 +8,7 @@ top_m_lloyd:
 	g++ -o top_m_lloyd top_m_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
 top_m_mixed_lloyd:
-	g++ -o top_m_mized_lloyd top_m_mixed_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
+	g++ -o top_m_mixed_lloyd top_m_mixed_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11
 
 level2_d2_lloyd:
 	g++ -o level2_d2_lloyd level2_d2_lloyd.cpp Heuristic.cpp Cluster.cpp Point.cpp Sampling.cpp -std=c++11

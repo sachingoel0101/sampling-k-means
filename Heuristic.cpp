@@ -64,10 +64,27 @@ vector<Point> Heuristic::h1_subset(vector<Point> sampled_set, int m) {
 
 Point Heuristic::h2_center(vector<Point> sampled_set,int k){
 	vector<Point> level_2_sample=h2_subset(sampled_set,k);
+	//cout<<"Heuristic centers chosen:";
+	vector<int> labels_picked;
+	for(vector<Point>::iterator it=level_2_sample.begin();it!=level_2_sample.end();++it){
+		Point tmp=*it;
+		labels_picked.push_back(tmp.get_label());
+		//tmp.print();
+	}
+	cout<<"Labels picked"<<endl;
+	for(vector<int>::iterator it=labels_picked.begin();it!=labels_picked.end();++it){
+		cout<<*it<<' ';
+	}
+	cout<<'\n';
 	// after picking k points from the multiset using d2_sample
 	// determine which of these points has the most points associated to it out of the multiset
 	vector<int> counts;
-	for(int i=0;i<k;i++) counts.push_back(0);
+	vector<int> mis_match;
+	for(int i=0;i<k;i++){	
+		counts.push_back(0);
+		mis_match.push_back(0);
+	}
+
 	for(int i=0;i<sampled_set.size();i++){
 		double min_dist=level_2_sample[0].dist(sampled_set[i]);
 		int index=0;
@@ -78,16 +95,20 @@ Point Heuristic::h2_center(vector<Point> sampled_set,int k){
 				index=j;
 			}
 		}
+		if(sampled_set[i].get_label()!=level_2_sample[index].get_label()) mis_match[index]++;
 		counts[index]++;
 	}
 	int max=counts[0];
 	int index=0;
+	cout<<"Counts: "<<counts[0]<<' '<<mis_match[0]<<endl;
 	for(int i=1;i<k;i++){
+		cout<<counts[i]<<' '<<mis_match[i]<<endl;
 		if(counts[i]>max){
 			max=counts[i];
 			index=i;
 		}
 	}
+	cout<<'\n';
 	return level_2_sample[index];
 }
 
