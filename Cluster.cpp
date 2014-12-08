@@ -59,9 +59,10 @@ double Cluster::get_cost(){
 	double ans=0;
 	while(getline(file,line)){
 		Point tmp(line);
-		ans+=tmp.dist(means[belongs_to(tmp)]);
+		double distance=tmp.dist(means[belongs_to(tmp)]);
+		ans+=(distance*distance);
 	}
-	return ans;
+	return sqrt(ans);
 }
 
 Cluster Cluster::iterate(int &change, vector<int> &prev_assign) {
