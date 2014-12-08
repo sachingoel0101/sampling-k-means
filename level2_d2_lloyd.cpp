@@ -36,7 +36,7 @@ int main(int argc,char* argv[]) {
 	cout<<"Initialization time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
 	vector<double> costs;
 	Cluster c1(argv[1],p);
-	int totalPts=stoi(argv[5]);
+	int totalPts=stoi(argv[4]);
 	vector<int> tmp_assign;
 	for(int i=0;i<totalPts;i++) tmp_assign.push_back(-1);
 	//costs.push_back(c1.get_cost());

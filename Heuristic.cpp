@@ -9,7 +9,7 @@ Point Heuristic::h1_center(vector<Point> sampled_set, int m) {
 	int dim=sampled_set[0].get_dimension();
 	vector<double> tmp;
 	for(int i=0;i<dim;i++) tmp.push_back(0);
-	Point ret(tmp,-1);
+	Point ret(tmp);
 	for(int i=0;i<subset.size();i++)
 		ret.add_point(subset[i]);
 	ret.divide_int(subset.size());
