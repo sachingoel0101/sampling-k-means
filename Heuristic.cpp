@@ -222,7 +222,7 @@ Point Heuristic::h4_center(vector<Point> sampled_set,int k){
 				index=j;
 			}
 		}
-		cluster_means[index].add_point(level_2_sample[i]);
+		cluster_means[index].add_point(sampled_set[i]);
 		counts[index]++;
 	}
 	int max=counts[0];

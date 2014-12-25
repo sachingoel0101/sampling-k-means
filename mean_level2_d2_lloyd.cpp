@@ -57,9 +57,6 @@ int main(int argc,char* argv[]) {
 		iter++;
 	}
 	//cout<<iter<<endl;
-	/**for(vector<double>::iterator it=costs.begin();it!=costs.end();++it)
-		cout<<*it<<',';
-	cout<<'\n';*/
 	gettimeofday(&end,NULL);
 	cout<<"Total time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
 	return 0;
