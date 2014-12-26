@@ -297,7 +297,7 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 			max=counts[i];
 		}
 	}
-	//remove(file_name);
+	remove(file_name);
 	return c2.get_means()[index];
 }
 vector<Point> Heuristic::h5_subset(vector<Point> sampled_set,int k){
