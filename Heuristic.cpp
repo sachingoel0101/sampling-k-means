@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include "Heuristic.h"
 #include "Sampling.h"
+#include "Cluster.h"
 
 using namespace std;
 
@@ -259,8 +260,41 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 	cout<<'\n';
 	// now, we need to create a clustering on the sampled_set using level_2_sample as initialization
 	//let's write the sampled_set into a temporary file
-	
-	return level_2_sample[0];
+	ofstream tmp_file;
+	tmp_file.open("tmp_runtime_data");
+	for(int i=0;i<sampled_set.size();i++){
+		tmp_file<<sampled_set[i].get_label()<<' ';
+		for(vector<double>::iterator it=sampled_set[i].get_coordinates().begin();it!=sampled_set[i].get_coordinates().end();++it){
+			tmp_file<<*it<<' ';
+		}
+		tmp_file<<'\n';
+	}
+	tmp_file.close();
+	cout<<"Running clustering in sample:\n";
+	Cluster c1("tmp_runtime_data",level_2_sample);
+	vector<int> tmp_assign;
+	for(int i=0;i<sampled_set.size();i++) tmp_assign.push_back(-1);
+	int change;
+	Cluster c2=c1.iterate(change,tmp_assign);
+	while(((double) change)/sampled_set.size() > 1e-3){
+		c1=c2;
+		c2=c1.iterate(change,tmp_assign);
+	}
+	// now figure out which cluster mean has highest no of points
+	vector<int> counts;
+	for(int i=0;i<k;i++) counts.push_back(0);
+	for(int i=0;i<sampled_set.size();i++){
+		counts[tmp_assign[i]]++;
+	}
+	int max=counts[0];
+	int index=0;
+	for(int i=1;i<k;i++){
+		if(counts[i]>max){
+			index=i;
+			max=counts[i];
+		}
+	}
+	return c2.get_means()[index];
 }
 vector<Point> Heuristic::h5_subset(vector<Point> sampled_set,int k){
 	return h2_subset(sampled_set,k);
