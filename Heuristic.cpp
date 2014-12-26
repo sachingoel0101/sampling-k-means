@@ -260,8 +260,10 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 	cout<<'\n';
 	// now, we need to create a clustering on the sampled_set using level_2_sample as initialization
 	//let's write the sampled_set into a temporary file
+	const char* file_name="tmp_runtime_data";
+	remove(file_name);
 	ofstream tmp_file;
-	tmp_file.open("tmp_runtime_data");
+	tmp_file.open(file_name);
 	for(int i=0;i<sampled_set.size();i++){
 		tmp_file<<sampled_set[i].get_label()<<' ';
 		for(vector<double>::iterator it=sampled_set[i].get_coordinates().begin();it!=sampled_set[i].get_coordinates().end();++it){
@@ -271,7 +273,7 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 	}
 	tmp_file.close();
 	cout<<"Running clustering in sample:\n";
-	Cluster c1("tmp_runtime_data",level_2_sample);
+	Cluster c1(file_name,level_2_sample);
 	vector<int> tmp_assign;
 	for(int i=0;i<sampled_set.size();i++) tmp_assign.push_back(-1);
 	int change;
@@ -294,6 +296,7 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 			max=counts[i];
 		}
 	}
+	remove(file_name);
 	return c2.get_means()[index];
 }
 vector<Point> Heuristic::h5_subset(vector<Point> sampled_set,int k){
