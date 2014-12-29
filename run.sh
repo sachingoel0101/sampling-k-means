@@ -11,7 +11,7 @@ do
 	./mean_level2_d2_lloyd "data/"${data_name} ${k} 1000 ${N} | tee ${directory}${data_name}"_"${k}"_mean_1000_"${i}
 	./mean_level2_d2_lloyd "data/"${data_name} ${k} 1500 ${N} | tee ${directory}${data_name}"_"${k}"_mean_1500_"${i}
 done
-rm ${data_name}"_"${k}".txt"
+rm -rf ${data_name}"_"${k}".txt"
 echo "Random" >>${data_name}"_"${k}".txt"
 grep "Initial cost" ${directory}${data_name}"_"${k}"_random"*    | cut -d':' -f3 | xargs >>${data_name}"_"${k}".txt"
 grep "Final cost"   ${directory}${data_name}"_"${k}"_random"*    | cut -d':' -f3 | xargs >>${data_name}"_"${k}".txt"
