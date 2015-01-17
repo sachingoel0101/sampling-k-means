@@ -1,9 +1,9 @@
-data_name="mnist_no_label"
-N=70000
+data_name="KDDCUP04Bio.txt"
+N=145751
 k=10
 directory="logs/"${data_name}"_"${k}"/"
 mkdir -p $directory
-for i in {1..20}
+for i in {11..13}
 do
 	echo ${i}_1
 	./random_lloyd         "data/"${data_name} ${k} ${N}      | tee ${directory}${data_name}"_"${k}"_random_"${i}

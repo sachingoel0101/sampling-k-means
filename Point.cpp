@@ -46,6 +46,7 @@ double Point::dist(Point p) {
 	} else {
 		double temp =0.0;
 		vector<double> p_point=p.get_coordinates();
+		// paralleize here
 		for(int i=0; i<dimension; i++) 
 			temp += (p_point[i]-point[i])*(p_point[i]-point[i]);
 		temp = sqrt(temp);
@@ -60,6 +61,7 @@ void Point::add_point(Point p){
 	}
 	else{
 		vector<double> tmp=p.get_coordinates();
+		// parallize here
 		for(int i=0;i<dimension;i++){
 			point[i]+=tmp[i];
 		}
@@ -71,6 +73,7 @@ void Point::divide_int(int count){
 		cout<<"Division by zero error"<<endl;
 		throw 0;
 	} else{
+		// paralelize here
 		for(int i=0;i<dimension;i++){
 			point[i]/=count;
 		}
