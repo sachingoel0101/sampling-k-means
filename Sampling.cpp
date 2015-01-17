@@ -55,17 +55,19 @@ vector<Point> Sampling::d2_sample(vector<Point> centers,int N) {
 	else {
 		reset_pools();
         vector<double> probabilities;
-		// first parallel here - 1
+		
+		// we shouldn't do parallel here
 		for(int line_no=0;line_no<num_pts;line_no++){
 		//maintain order here also
         	Point p1=next_point();
 		
             double min_dist = p1.dist(centers[0]);
+            #pragma omp parallel for
             for(int i=1; i< centers.size(); i++) {
                 double local_dist = p1.dist(centers[i]);
                 min_dist = min(min_dist,local_dist);
             }
-		// but maintain order here
+		
             probabilities.push_back(min_dist*min_dist);
         }
         discrete_distribution<> d(probabilities.begin(), probabilities.end());
@@ -77,6 +79,7 @@ vector<Point> Sampling::uniform_sample(int N) {
 	vector<double> probabilities;
 
 	// do parallel here
+	//#pragma omp parallel for
 	for(int i=0;i<num_pts;i++){
 		probabilities.push_back(1.0);
 	}
@@ -90,8 +93,10 @@ vector<int> Sampling:: sample_indices(discrete_distribution<> d,int N) {
 	mt19937 gen(rd());
 	vector<int> ans;
 	//change to for loop and parallelize
-	while(ans.size()<N) {
+	#pragma omp parallel for ordered
+	for(int i=0;i<N;i++) {
 		int chosen = d(gen);
+		#pragma omp ordered
 		ans.push_back(chosen);
 	}
 	sort(ans.begin(),ans.end());

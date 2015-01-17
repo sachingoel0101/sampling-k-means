@@ -11,9 +11,11 @@ Point Heuristic::h1_center(vector<Point> sampled_set, int m) {
 	vector<double> tmp;
 
 	//parallize here
+	#pragma omp parallel for
 	for(int i=0;i<dim;i++) tmp.push_back(0);
+		
 	Point ret(tmp);
-	//parallelize here
+	//parallelize here but resource is shared so may not do it
 	for(int i=0;i<subset.size();i++)
 		ret.add_point(subset[i]);
 	ret.divide_int(subset.size());

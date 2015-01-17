@@ -46,7 +46,7 @@ double Point::dist(Point p) {
 	} else {
 		double temp =0.0;
 		vector<double> p_point=p.get_coordinates();
-		// paralleize here
+		// paralleize here not doing o/w it gets nested
 		for(int i=0; i<dimension; i++) 
 			temp += (p_point[i]-point[i])*(p_point[i]-point[i]);
 		temp = sqrt(temp);
@@ -62,6 +62,7 @@ void Point::add_point(Point p){
 	else{
 		vector<double> tmp=p.get_coordinates();
 		// parallize here
+		#pragma omp parallel for
 		for(int i=0;i<dimension;i++){
 			point[i]+=tmp[i];
 		}
@@ -74,6 +75,7 @@ void Point::divide_int(int count){
 		throw 0;
 	} else{
 		// paralelize here
+		#pragma omp parallel for
 		for(int i=0;i<dimension;i++){
 			point[i]/=count;
 		}
