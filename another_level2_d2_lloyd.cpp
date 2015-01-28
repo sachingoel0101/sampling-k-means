@@ -29,7 +29,7 @@ int main(int argc,char* argv[]) {
 	vector<Point> p;
 	Heuristic h;
 	for(int i=0;i<numcluster;i++){
-		p.push_back(h.h3_center(sampler.d2_sample(p,n_val),numcluster-i,p));
+		p.push_back(h.h3_center(sampler.d2_sample(p,n_val),numcluster,p));
 	}
 	gettimeofday(&end,NULL);
 	sampler.close_file();

@@ -3,19 +3,15 @@
 
 using namespace std;
 
-Point::Point(vector<double> __point,int  __label) {
+Point::Point(vector<double> __point) {
 	dimension = __point.size();
 	point=__point;
-	label=__label;
 }
 
 Point::Point(string __line){
 	stringstream ss(__line);
 	double tmp;
 	dimension=0;
-	int l;
-	ss>>l;
-	label=l;
 	while(ss>>tmp){
 		point.push_back(tmp);
 		dimension++;
@@ -25,8 +21,9 @@ Point::Point(string __line){
 Point::Point(void){
 	dimension=0;
 }
+
 void Point::print() {
-	cout << "Dimension:"<<dimension<<" Label:"<<label;
+	cout << "Dimension:"<<dimension;
 	cout<<" Data:( ";
 	for (vector<double>::iterator it=point.begin();it!=point.end();++it){
 		cout<< *it<< ' ';
@@ -42,9 +39,6 @@ vector<double> Point::get_coordinates(){
 	return point;
 }
 
-int Point:: get_label(){
-	return label;
-}
 double Point::dist(Point p) {
 	if(p.get_dimension() != dimension) {
 		cout<<"Dimension mismatch error"<<endl;
@@ -69,7 +63,6 @@ void Point::add_point(Point p){
 		for(int i=0;i<dimension;i++){
 			point[i]+=tmp[i];
 		}
-		label=-1;
 	}
 }
 

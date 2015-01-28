@@ -76,7 +76,7 @@ Cluster Cluster::iterate(int &change, vector<int> &prev_assign) {
 	for(int i=0;i<dimension;i++){
 		tmp_point.push_back(0);
 	}
-	Point zero_point=Point(tmp_point,-1);
+	Point zero_point=Point(tmp_point);
 	for(int i=0;i<num_cluster;i++){
 		tmp_point_count.push_back(0);
 		tmp_means.push_back(zero_point);

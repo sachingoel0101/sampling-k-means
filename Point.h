@@ -16,20 +16,18 @@ using namespace std;
 
 class Point {
 public:
-	Point(vector<double>,int);
+	Point(vector<double>);
 	Point(string);
 	Point(void);
     void print();
     int get_dimension();
 	vector<double> get_coordinates();
-	int get_label();
     double dist(Point);
 	void add_point(Point);
 	void divide_int(int);
 protected:
     vector<double> point;
     int dimension;
-	int label;
 };
 
 #endif

@@ -10,7 +10,7 @@ Point Heuristic::h1_center(vector<Point> sampled_set, int m) {
 	int dim=sampled_set[0].get_dimension();
 	vector<double> tmp;
 	for(int i=0;i<dim;i++) tmp.push_back(0);
-	Point ret(tmp,-1);
+	Point ret(tmp);
 	for(int i=0;i<subset.size();i++)
 		ret.add_point(subset[i]);
 	ret.divide_int(subset.size());
@@ -56,16 +56,17 @@ vector<Point> Heuristic::h1_subset(vector<Point> sampled_set, int m) {
 	}	
 
 
-	for(int i=0;i<200;i++){
+	/**for(int i=0;i<200;i++){
 		cout<<sampled_set[ranks[n-1-i].second].get_label()<<' ';
 	}
-	cout<<'\n';
+	cout<<'\n';*/
 	return to_ret;
 }
 
 Point Heuristic::h2_center(vector<Point> sampled_set,int k){
 	vector<Point> level_2_sample=h2_subset(sampled_set,k);
 	//cout<<"Heuristic centers chosen:";
+	/**
 	vector<int> labels_picked;
 	for(vector<Point>::iterator it=level_2_sample.begin();it!=level_2_sample.end();++it){
 		Point tmp=*it;
@@ -77,13 +78,14 @@ Point Heuristic::h2_center(vector<Point> sampled_set,int k){
 		cout<<*it<<' ';
 	}
 	cout<<'\n';
+	*/
 	// after picking k points from the multiset using d2_sample
 	// determine which of these points has the most points associated to it out of the multiset
 	vector<int> counts;
-	vector<int> mis_match;
+	//vector<int> mis_match;
 	for(int i=0;i<k;i++){	
 		counts.push_back(0);
-		mis_match.push_back(0);
+		//mis_match.push_back(0);
 	}
 
 	for(int i=0;i<sampled_set.size();i++){
@@ -96,14 +98,14 @@ Point Heuristic::h2_center(vector<Point> sampled_set,int k){
 				index=j;
 			}
 		}
-		if(sampled_set[i].get_label()!=level_2_sample[index].get_label()) mis_match[index]++;
+		//if(sampled_set[i].get_label()!=level_2_sample[index].get_label()) mis_match[index]++;
 		counts[index]++;
 	}
 	int max=counts[0];
 	int index=0;
-	cout<<"Counts: "<<counts[0]<<' '<<mis_match[0]<<endl;
+	cout<<"Counts: "<<counts[0]<<' ';
 	for(int i=1;i<k;i++){
-		cout<<counts[i]<<' '<<mis_match[i]<<endl;
+		cout<<counts[i]<<' ';
 		if(counts[i]>max){
 			max=counts[i];
 			index=i;
@@ -126,7 +128,7 @@ vector<Point> Heuristic::h2_subset(vector<Point> sampled_set,int k){
 
 Point Heuristic::h3_center(vector<Point> sampled_set,int k,vector<Point> already_chosen){
 	vector<Point> level_2_sample=h3_subset(sampled_set,k);
-	vector<int> labels_picked;
+	/**vector<int> labels_picked;
 	for(vector<Point>::iterator it=level_2_sample.begin();it!=level_2_sample.end();++it){
 		Point tmp=*it;
 		labels_picked.push_back(tmp.get_label());
@@ -136,7 +138,7 @@ Point Heuristic::h3_center(vector<Point> sampled_set,int k,vector<Point> already
 	for(vector<int>::iterator it=labels_picked.begin();it!=labels_picked.end();++it){
 		cout<<*it<<' ';
 	}
-	cout<<'\n';
+	cout<<'\n';*/
 	// after picking k points from the multiset using d2_sample, assign all points to k clusters
 	// calculate the Delta value for each of these clusters with respect to the already chosen points
 	vector<double> distances;
@@ -192,7 +194,7 @@ vector<Point> Heuristic::h3_subset(vector<Point> sampled_set,int k){
 
 Point Heuristic::h4_center(vector<Point> sampled_set,int k){
 	vector<Point> level_2_sample=h4_subset(sampled_set,k);
-	vector<int> labels_picked;
+	/**vector<int> labels_picked;
 	for(vector<Point>::iterator it=level_2_sample.begin();it!=level_2_sample.end();++it){
 		Point tmp=*it;
 		labels_picked.push_back(tmp.get_label());
@@ -202,13 +204,13 @@ Point Heuristic::h4_center(vector<Point> sampled_set,int k){
 	for(vector<int>::iterator it=labels_picked.begin();it!=labels_picked.end();++it){
 		cout<<*it<<' ';
 	}
-	cout<<'\n';
+	cout<<'\n';*/
 	// after picking k points from the multiset using d2_sample, assign all points to k clusters
 	vector<int> counts;
 	vector<Point> cluster_means;
 	vector<double> tmp;
 	for(int i=0;i<sampled_set[0].get_dimension();i++) tmp.push_back(0);
-	Point tmp_point(tmp,-1);
+	Point tmp_point(tmp);
 	for(int i=0;i<k;i++){
 		counts.push_back(0);
 		cluster_means.push_back(tmp_point);
@@ -246,8 +248,8 @@ vector<Point> Heuristic::h4_subset(vector<Point> sampled_set,int k){
 }
 
 Point Heuristic::h5_center(vector<Point> sampled_set,int k){
-	vector<Point> level_2_sample=h4_subset(sampled_set,k);
-	vector<int> labels_picked;
+	vector<Point> level_2_sample=h5_subset(sampled_set,k);
+	/**vector<int> labels_picked;
 	for(vector<Point>::iterator it=level_2_sample.begin();it!=level_2_sample.end();++it){
 		Point tmp=*it;
 		labels_picked.push_back(tmp.get_label());
@@ -257,7 +259,7 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 	for(vector<int>::iterator it=labels_picked.begin();it!=labels_picked.end();++it){
 		cout<<*it<<' ';
 	}
-	cout<<'\n';
+	cout<<'\n';*/
 	// now, we need to create a clustering on the sampled_set using level_2_sample as initialization
 	//let's write the sampled_set into a temporary file
 	const char* file_name="tmp_runtime_data";
@@ -265,7 +267,6 @@ Point Heuristic::h5_center(vector<Point> sampled_set,int k){
 	ofstream tmp_file;
 	tmp_file.open(file_name);
 	for(int i=0;i<sampled_set.size();i++){
-		tmp_file<<sampled_set[i].get_label()<<' ';
 		for(vector<double>::iterator it=sampled_set[i].get_coordinates().begin();it!=sampled_set[i].get_coordinates().end();++it){
 			tmp_file<<*it<<' ';
 		}

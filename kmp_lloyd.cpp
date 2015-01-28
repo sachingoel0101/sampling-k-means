@@ -28,7 +28,6 @@ int main(int argc,char* argv[]) {
 	vector<Point> p;
 	for(int i=0;i<numcluster;i++){
 		Point tmp=sampler.d2_sample(p,1)[0];
-		cout<<tmp.get_label();
 		p.push_back(tmp);
 	}
 	sampler.close_file();
@@ -41,7 +40,7 @@ int main(int argc,char* argv[]) {
 	for(int i=0;i<totalPts;i++) tmp_assign.push_back(-1);
 	//costs.push_back(c1.get_cost());
 	c1.print();
-	cout<<"0:"<<c1.get_cost()<<endl;
+	cout<<"Initial cost:"<<c1.get_cost()<<endl;
 	int change;
 	Cluster c2=c1.iterate(change,tmp_assign);
 	//costs.push_back(c2.get_cost());
@@ -62,5 +61,7 @@ int main(int argc,char* argv[]) {
 	cout<<'\n';*/
 	gettimeofday(&end,NULL);
 	cout<<"Total time: "<<(end.tv_sec-start.tv_sec+1e-6*(end.tv_usec-start.tv_usec))<<"\n";
+	cout<<"Iterations:"<<iter<<endl;
+	cout<<"Final cost:"<<c2.get_cost()<<endl;
 	return 0;
 }
