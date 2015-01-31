@@ -8,26 +8,27 @@ using namespace std;
 /**
  *
  * the vector point stores all the coordinates
- * dist returns euclidean distance
- * add_point adds the coordinates to "this"
- * divide_int scales coordinates of "this"
+ * dist returns euclidean distance for string 'euclidean'. More to be added
+ *later.
+ * add_point adds the coordinates to this
+ * divide_int scales coordinates of this
  *
  * */
 
 class Point {
-public:
-	Point(vector<double>);
-	Point(string);
-	Point(void);
-    void print();
-    int get_dimension();
-	vector<double> get_coordinates();
-    double dist(Point);
-	void add_point(Point);
-	void divide_int(int);
-protected:
-    vector<double> point;
-    int dimension;
+	public:
+		Point (const vector<double> &);
+		Point (string);
+		void print (ostream &) const;
+		int get_dimension() const;
+		vector<double> get_coordinates() const;
+		double dist (const Point &) const; // default Euclidean distance returned
+		double dist (const Point &, string) const;
+		void add_point (const Point &);
+		void divide_int (int);
+	protected:
+		vector<double> point;
+		int dimension;
 };
 
 #endif

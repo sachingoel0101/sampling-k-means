@@ -3,124 +3,138 @@
 
 using namespace std;
 
-Cluster::Cluster(string __filename,vector<Point> __means) {
-	int tmp=__means[0].get_dimension();
-	for(vector<Point>::iterator it=__means.begin();it!=__means.end();++it){
-		Point tmp1=*it;
-		if(tmp1.get_dimension()!=tmp){
-			cout<<"Dimension mismatch error"<<endl;
-			throw 1;
+Cluster::Cluster (Resource *__rsc, const vector<Point> &__means) {
+	int tmp = __means[0].get_dimension();
+	for (vector<Point>::const_iterator it = __means.begin(); it != __means.end(); ++it) {
+		Point tmp1 = *it;
+		if (tmp1.get_dimension() != tmp) {
+			cout << "Error: Dimension mismatch error while initializing cluster" << endl;
+			exit (1);
 		}
 	}
-    filename=__filename;
-    means=__means;
-	dimension=tmp;
-	num_cluster=__means.size();
-	vector<int> assignments;
-	for(int i=0;i<num_cluster;i++) assignments.push_back(0);
+	dimension = tmp;
+	num_cluster = __means.size();
+	for (int i = 0; i < num_cluster; i++) {
+		means.push_back (__means[i]);
+	}
+	rsc = __rsc;
+	num_pts = rsc->get_num_pts();
+	for (int i = 0; i < num_pts; i++) {
+		assignments.push_back (-1);
+	}
+	cost = DBL_MAX;
+	find_assignments();
 }
 
-Cluster::Cluster(void){
-	dimension=0;
-	num_cluster=0;
-}
-
-vector<Point> Cluster::get_means(){
+vector<Point> Cluster::get_means() const {
 	return means;
 }
 
-int Cluster::get_dimension(){
+int Cluster::get_dimension() const {
 	return dimension;
 }
 
-int Cluster::get_num_cluster(){
+int Cluster::get_num_cluster() const {
 	return num_cluster;
 }
 
-vector<int> Cluster::get_assignments(){
+vector<int> Cluster::get_assignments() const {
 	return assignments;
 }
 
-void Cluster::set_assignments(vector<int> __assignments){
-	assignments=__assignments;
+double Cluster::get_cost () const {
+	return cost;
 }
 
-void Cluster::print() {
-    for(int i=0; i<num_cluster; i++){
-        means[i].print();
+double Cluster::get_cost_change () const {
+	return cost_change;
+}
+
+int Cluster::get_assign_change () const {
+	return assign_change;
+}
+
+void Cluster::print (ostream &writer) const {
+	for (int i = 0; i < num_cluster; i++) {
+		means[i].print (writer);
 	}
-	cout<<'\n';
+	writer << "" << endl;
 }
 
-double Cluster::get_cost(){
-	ifstream file;
-	file.open(filename.c_str());
-	string line;
-	double ans=0;
-	while(getline(file,line)){
-		Point tmp(line);
-		double distance=tmp.dist(means[belongs_to(tmp)]);
-		ans+=(distance*distance);
-	}
-	return sqrt(ans);
-}
-
-Cluster Cluster::iterate(int &change, vector<int> &prev_assign) {
-	change=0;
-	vector<int> new_assign;
-	ifstream data;
-	data.open(filename.c_str());
+void Cluster::iterate () {
 	vector<Point> tmp_means;
 	vector<int> tmp_point_count;
 	vector<double> tmp_point;
-	for(int i=0;i<dimension;i++){
-		tmp_point.push_back(0);
+	for (int i = 0; i < dimension; i++) {
+		tmp_point.push_back (0);
 	}
-	Point zero_point=Point(tmp_point);
-	for(int i=0;i<num_cluster;i++){
-		tmp_point_count.push_back(0);
-		tmp_means.push_back(zero_point);
+	Point zero_point = Point (tmp_point);
+	for (int i = 0; i < num_cluster; i++) {
+		tmp_point_count.push_back (0);
+		tmp_means.push_back (zero_point);
 	}
-	string line;
-	getline(data,line);
-	int i=0;
-	for(line;!data.eof();getline(data,line)){
-		Point tmp(line);
-		int index=belongs_to(tmp);
-		if(index!=prev_assign[i]) change++;
-		new_assign.push_back(index);
-		tmp_means[index].add_point(tmp);
-		tmp_point_count[index]+=1;
-		i++;
+	rsc->reset_pools();
+	int index;
+	for (int i = 0 ; i < num_pts; i++) {
+		index = assignments[i];
+		tmp_means[index].add_point (rsc->next_point() );
+		tmp_point_count[index] += 1;
 	}
-	data.close();
-	Cluster new_cluster(filename,tmp_means);
-	new_cluster.set_assignments(tmp_point_count);
-	cout<<"Point assignments: ";
-	for(int i=0;i<num_cluster;i++){
-		cout<<tmp_point_count[i]<<' ';
-		if(tmp_point_count[i]==0) tmp_point_count[i]=1;
-	}
-	cout<<'\n';
-	new_cluster.scale_cluster(tmp_point_count);	
-	prev_assign.clear();
-	prev_assign=new_assign;
-	return new_cluster;
-}
-
-int Cluster::belongs_to(Point p){
-	int index=0;
-	double min_dist=DBL_MAX;
-	for(int i=0;i<num_cluster;i++){
-		if(means[i].dist(p)<min_dist){
-			index=i; min_dist=means[i].dist(p);
+	for (int i = 0; i < num_cluster; i++) {
+		if (tmp_point_count[i] == 0) {
+			cout << "Warning: Zero assignments during lloyd iteration" << endl;
+			exit (1);
 		}
 	}
+	means = tmp_means;
+	scale_cluster (tmp_point_count);
+	find_assignments();
+}
+
+void Cluster::find_assignments() {
+	vector<int> prev_assign = assignments;
+	double prev_cost = cost;
+	cost = 0;
+	assign_change = 0;
+	rsc->reset_pools();
+	vector<int> counts;
+	counts.resize (num_cluster);
+	int index = 0;
+	double dist = 0;
+	for (int i = 0; i < num_pts; i++) {
+		index = belongs_to (rsc->next_point(), dist);
+		assignments[i] = index;
+		counts[index]++;
+		if (index != prev_assign[i]) {
+			assign_change++;
+		}
+		cost += (dist * dist);
+	}
+	cout << "Point assignments: ";
+	for (int i = 0; i < num_cluster; i++) {
+		cout << counts[i] << " ";
+	}
+	cout << "" << endl;
+	cost_change = cost - prev_cost;
+}
+
+int Cluster::belongs_to (const Point &p, double &dist) const {
+	int index = 0;
+	double min_dist = DBL_MAX;
+	double tmp_dist;
+	for (int i = 0; i < num_cluster; i++) {
+		tmp_dist = means[i].dist (p);
+		if (tmp_dist < min_dist) {
+			index = i;
+			min_dist = tmp_dist;
+		}
+	}
+	dist = min_dist;
 	return index;
 }
 
-void Cluster::scale_cluster(vector<int> point_count){
-	for(int i=0;i<num_cluster;i++){
-		means[i].divide_int(point_count[i]);
+void Cluster::scale_cluster (const vector<int> &point_count) {
+	for (int i = 0; i < num_cluster; i++) {
+		means[i].divide_int (point_count[i]);
 	}
 }
