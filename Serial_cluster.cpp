@@ -76,33 +76,10 @@ void Cluster::iterate () {
 	}
 	rsc->reset_pools();
 	int index;
-	vector<int *> local_tmp_point_count (omp_get_max_threads() );
-	vector<Point *> local_tmp_means (omp_get_max_threads() );
-	#pragma omp parallel private(index)
-	{
-		int np = omp_get_num_threads();
-		vector<int> local_point_count;
-		vector<Point> local_means;
-		for (int i = 0; i < num_cluster; i++) {
-			local_point_count.push_back (0);
-			local_means.push_back (zero_point);
-		}
-		int tid = omp_get_thread_num();
-		local_tmp_point_count[tid] = local_point_count.data();
-		local_tmp_means[tid] = local_means.data();
-		#pragma omp for schedule(dynamic)
-		for (int i = 0 ; i < num_pts; i++) {
-			index = assignments[i];
-			local_means[index].add_point (rsc->index_point (i) );
-			local_point_count[index] += 1;
-		}
-		#pragma omp for schedule(dynamic)
-		for (int i = 0; i < num_cluster; i++) {
-			for (int p = 0; p < np; p++) {
-				tmp_point_count[i] += local_tmp_point_count[p][i];
-				tmp_means[i].add_point (local_tmp_means[p][i]);
-			}
-		}
+	for (int i = 0 ; i < num_pts; i++) {
+		index = assignments[i];
+		tmp_means[index].add_point (rsc->index_point (i) );
+		tmp_point_count[index] += 1;
 	}
 	for (int i = 0; i < num_cluster; i++) {
 		if (tmp_point_count[i] == 0) {
@@ -125,33 +102,15 @@ void Cluster::find_assignments() {
 	counts.resize (num_cluster);
 	int index = 0;
 	double dist = 0;
-	double tmp_cost = 0;
-	int tmp_assign_change = 0;
-	vector<int *> local_tmp_counts (omp_get_max_threads() );
-	#pragma omp parallel private(index,dist) reduction(+:tmp_cost,tmp_assign_change)
-	{
-		int np = omp_get_num_threads();
-		vector<int> local_counts (num_cluster);
-		local_tmp_counts[omp_get_thread_num()] = local_counts.data();
-		#pragma omp for schedule(dynamic)
-		for (int i = 0; i < num_pts; i++) {
-			index = belongs_to (rsc->index_point (i), dist);
-			assignments[i] = index;
-			local_counts[index]++;
-			if (index != prev_assign[i]) {
-				tmp_assign_change++;
-			}
-			tmp_cost += (dist * dist);
+	for (int i = 0; i < num_pts; i++) {
+		index = belongs_to (rsc->index_point (i), dist);
+		assignments[i] = index;
+		counts[index]++;
+		if (index != prev_assign[i]) {
+			assign_change++;
 		}
-		#pragma omp for schedule(dynamic)
-		for (int i = 0; i < num_cluster; i++) {
-			for (int p = 0; p < np; p++) {
-				counts[i] += local_tmp_counts[p][i];
-			}
-		}
+		cost += (dist * dist);
 	}
-	cost = tmp_cost;
-	assign_change = tmp_assign_change;
 	cout << "Point assignments: ";
 	for (int i = 0; i < num_cluster; i++) {
 		cout << counts[i] << " ";

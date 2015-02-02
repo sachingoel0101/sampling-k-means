@@ -20,6 +20,8 @@ vector<Point> parse_file (string file_name) {
 	return tmp;
 }
 int main (int argc, char *argv[]) {
+	struct timeval parse_start, parse_end, init_end, iter_end;
+	gettimeofday (&parse_start, NULL);
 	int mode = 0;
 	string program (argv[1]);
 	if (program.compare ("random") == 0 ) {
@@ -36,11 +38,10 @@ int main (int argc, char *argv[]) {
 		exit (1);
 	}
 	vector<Point> data = parse_file (argv[2]);
-	struct timeval start, end;
-	gettimeofday (&start, NULL);
 	Resource rsc (&data);
 	Sampling sampler (&rsc);
 	int num_cluster = stoi (argv[3]);
+	gettimeofday (&parse_end, NULL);
 	vector<Point> p;
 	if (mode == 0) {
 		p = sampler.uniform_sample (num_cluster);
@@ -60,8 +61,7 @@ int main (int argc, char *argv[]) {
 			p.push_back (h.mean_d2_on_sample (tmp, num_cluster) );
 		}
 	}
-	gettimeofday (&end, NULL);
-	cout << "Initialization time: " << (end.tv_sec - start.tv_sec + 1e-6 * (end.tv_usec - start.tv_usec) ) << endl;
+	gettimeofday (&init_end, NULL);
 	Cluster c (&rsc, p);
 	cout << "Iteration 0:" << sqrt (c.get_cost() ) << " Assignment change:" << c.get_assign_change() << endl;
 	int iter = 1;
@@ -71,9 +71,11 @@ int main (int argc, char *argv[]) {
 		cout << "Iteration " << iter << ":" << sqrt (c.get_cost() ) << " Assignment change:" << c.get_assign_change() << endl;
 		iter++;
 	}
-	gettimeofday (&end, NULL);
-	cout << "Total time: " << (end.tv_sec - start.tv_sec + 1e-6 * (end.tv_usec - start.tv_usec) ) << endl;
-	cout << "Number of iterations:" << iter << endl;
+	gettimeofday (&iter_end, NULL);
+	cout << "Total time: " << (iter_end.tv_sec - parse_start.tv_sec + 1e-6 * (iter_end.tv_usec - parse_start.tv_usec) ) << endl;
+	cout << "Initialization time: " << (init_end.tv_sec - parse_end.tv_sec + 1e-6 * (init_end.tv_usec - parse_end.tv_usec) ) << endl;
+	cout << "Number of iterations:" << (iter - 1 ) << endl;
+	cout << "Time per iteration:" << ( (iter_end.tv_sec - init_end.tv_sec + 1e-6 * (iter_end.tv_usec - init_end.tv_usec) ) / (iter - 1) ) << endl;
 	cout << "Final cost:" << sqrt (c.get_cost() ) << endl;
 	return 0;
 }
