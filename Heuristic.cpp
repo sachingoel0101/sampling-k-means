@@ -42,15 +42,12 @@ Point Heuristic::mean_d2_on_sample (vector<Point> &sampled_set, int k) {
 	}
 	int max = counts[0];
 	int index = 0;
-	cout << "Counts: " << counts[0] << ' ' << endl;
 	for (int i = 1; i < k; i++) {
-		cout << counts[i] << ' ' << endl;
 		if (counts[i] > max) {
 			max = counts[i];
 			index = i;
 		}
 	}
-	cout << "" << endl;
 	cluster_means[index].divide_int (counts[index]);
 	return cluster_means[index];
 }
