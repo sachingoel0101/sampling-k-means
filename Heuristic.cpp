@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "Heuristic.h"
+#include "omp.h"
 
 using namespace std;
 
@@ -27,18 +28,42 @@ Point Heuristic::mean_d2_on_sample (vector<Point> &sampled_set, int k) {
 		counts.push_back (0);
 		cluster_means.push_back (tmp_point);
 	}
-	for (int i = 0; i < sampled_set.size(); i++) {
-		double min_dist = level_2_sample[0].dist (sampled_set[i]);
-		int index = 0;
-		for (int j = 1; j < k; j++) {
-			double tmp_dist = level_2_sample[j].dist (sampled_set[i]);
-			if (tmp_dist < min_dist) {
-				min_dist = tmp_dist;
-				index = j;
+	vector<int *> local_tmp_counts (omp_get_max_threads() );
+	vector<Point *> local_tmp_cluster_means (omp_get_max_threads() );
+	#pragma omp parallel
+	{
+		int np = omp_get_num_threads();
+		int tid = omp_get_thread_num();
+		vector<int> local_counts (k);
+		vector<Point> local_cluster_means;
+		for (int i = 0; i < k; i++) {
+			local_cluster_means.push_back (tmp_point);
+		}
+		local_tmp_counts[tid] = local_counts.data();
+		local_tmp_cluster_means[tid] = local_cluster_means.data();
+		double min_dist, tmp_dist;
+		int index;
+		#pragma omp for schedule(dynamic)
+		for (int i = 0; i < sampled_set.size(); i++) {
+			min_dist = level_2_sample[0].dist (sampled_set[i]);
+			index = 0;
+			for (int j = 1; j < k; j++) {
+				tmp_dist = level_2_sample[j].dist (sampled_set[i]);
+				if (tmp_dist < min_dist) {
+					min_dist = tmp_dist;
+					index = j;
+				}
+			}
+			local_cluster_means[index].add_point (sampled_set[i]);
+			local_counts[index]++;
+		}
+		#pragma omp for schedule(dynamic)
+		for (int i = 0; i < k; i++) {
+			for (int p = 0; p < np; p++) {
+				cluster_means[i].add_point (local_tmp_cluster_means[p][i]);
+				counts[i] += local_tmp_counts[p][i];
 			}
 		}
-		cluster_means[index].add_point (sampled_set[i]);
-		counts[index]++;
 	}
 	int max = counts[0];
 	int index = 0;

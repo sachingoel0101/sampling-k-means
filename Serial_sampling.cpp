@@ -16,21 +16,14 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 	else {
 		rsc->reset_pools();
 		vector<double> probabilities;
-		probabilities.resize (num_pts);
-		#pragma omp parallel
-		{
-			double min_dist, local_dist;
-			Point p1 = rsc->index_point (0);
-			#pragma omp for schedule(dynamic)
-			for (int line_no = 0; line_no < num_pts; line_no++) {
-				p1 = rsc->index_point (line_no);
-				min_dist = p1.dist (centers[0]);
-				for (int i = 1; i < centers.size(); i++) {
-					local_dist = p1.dist (centers[i]);
-					min_dist = min (min_dist, local_dist);
-				}
-				probabilities[line_no] = (min_dist * min_dist);
+		for (int line_no = 0; line_no < num_pts; line_no++) {
+			Point p1 = rsc->next_point();
+			double min_dist = p1.dist (centers[0]);
+			for (int i = 1; i < centers.size(); i++) {
+				double local_dist = p1.dist (centers[i]);
+				min_dist = min (min_dist, local_dist);
 			}
+			probabilities.push_back (min_dist * min_dist);
 		}
 		discrete_distribution<> d (probabilities.begin(), probabilities.end() );
 		return pick_points (sample_indices (d, N) );
@@ -39,9 +32,8 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 
 vector<Point> Sampling::uniform_sample (int N) {
 	vector<double> probabilities;
-	probabilities.resize (num_pts);
 	for (int i = 0; i < num_pts; i++) {
-		probabilities[i] = (1.0);
+		probabilities.push_back (1.0);
 	}
 	discrete_distribution<> d (probabilities.begin(), probabilities.end() );
 	return pick_points (sample_indices (d, N) );
