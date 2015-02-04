@@ -111,11 +111,11 @@ void Cluster::find_assignments() {
 		}
 		cost += (dist * dist);
 	}
-	cout << "Point assignments: ";
+	/**cout << "Point assignments: ";
 	for (int i = 0; i < num_cluster; i++) {
 		cout << counts[i] << " ";
 	}
-	cout << "" << endl;
+	cout << "" << endl;*/
 	cost_change = cost - prev_cost;
 }
 
