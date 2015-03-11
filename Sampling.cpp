@@ -36,33 +36,34 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 			}
 		}
 		if(N==1){
-			discrete_distribution<> d (distances.begin(),distances.end());
-			return pick_points(sample_indices(d,1));
+			vector<int> indices=sample_indices(distances,1);
+			return pick_points(indices);
 		}
 		vector<vector<int>> result;
 		result.resize(omp_get_max_threads());
-		vector<int> batch_sizes;
-		batch_sizes.resize(omp_get_max_threads());
+		vector<int> lower_vals;
+		lower_vals.resize(omp_get_max_threads());
 		int total_samples=0;
 		#pragma omp parallel reduction(+:total_samples)
 		{
 			int np=omp_get_num_threads();
 			int tid=omp_get_thread_num();
 			int batch_size=num_pts/np;
-			batch_sizes[tid]=batch_size;
 			int lower=tid*batch_size;
+			lower_vals[tid]=lower;
 			int higher=(tid+1)*batch_size;
 			if(higher>num_pts) higher=num_pts;
 			double tmp_sum=0;
+			vector<double> local_distances;
+			local_distances.resize(higher-lower);
 			for(int i=lower;i<higher;i++){
 				tmp_sum+=distances[i];
+				local_distances[i-lower]=distances[i];
 			}
-			discrete_distribution<> d(distances.begin()+lower,distances.begin()+higher);
 			int points_to_sample=(int) ceil(N * (tmp_sum/sum));
 			total_samples+=points_to_sample;
-			result[tid]=sample_indices(d,points_to_sample);
+			result[tid]=sample_indices(local_distances,points_to_sample);
 		}
-		int batch_size=batch_sizes[0];
 		vector<int> points_to_pick;
 		points_to_pick.resize(total_samples);
 		int counter=0;
@@ -70,7 +71,7 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 			vector<int> tmp=result[i];
 			int length=tmp.size();
 			for(int j=0;j<length;j++){
-				points_to_pick[counter]=tmp[j]+i*batch_size;
+				points_to_pick[counter]=tmp[j]+lower_vals[i];
 				counter++;
 			}
 		}
@@ -84,42 +85,42 @@ vector<Point> Sampling::uniform_sample (int N) {
 	for (int i = 0; i < num_pts; i++) {
 		probabilities[i] = (1.0);
 	}
-	discrete_distribution<> d (probabilities.begin(), probabilities.end() );
-	return pick_points (sample_indices (d, N) );
+	vector<int> indices=sample_indices(probabilities,N);
+	return pick_points (indices );
 }
 
-vector<int> Sampling:: sample_indices (discrete_distribution<> d, int N) {
-	srand (time (NULL) );
+vector<int> Sampling:: sample_indices (vector<double> &probabilities, int N) {
 	random_device rd;
 	mt19937 gen(rd());
+	unsigned int max_val=gen.max();
+	int length = probabilities.size();
+	for(int i=1;i<length;i++) {
+		probabilities[i] += probabilities[i-1];
+	}
 	vector<int> ans;
 	while (ans.size() < N) {
-		int chosen = d (gen);
-		ans.push_back (chosen);
+		double temp_num =  ( ((double) gen())/max_val )*(probabilities[length-1]);		
+		int start=0,end=length-1;
+		int mid;
+		while(start<=end) {
+			mid = (start+end)/2;
+			if(temp_num<probabilities[mid-1]) {
+				end = mid-1;
+			} else if(temp_num > probabilities [mid]){
+				start = mid+1;
+			} else {
+				break;
+			}
+		}
+		ans.push_back (mid);
 	}
-	sort (ans.begin(), ans.end() );
 	return ans;
 }
 
-vector<Point> Sampling::pick_points (const vector<int> &indices) {
-	vector<Point> current_set;
-	vector<int>::const_iterator it = indices.begin();
-	int temp = 0;
-	rsc->reset_pools();
-	Point p1 = rsc->next_point();
-	int tmp_cout = 0;
-	while (tmp_cout < num_pts) {
-		if (temp == (*it) ) {
-			current_set.push_back (p1);
-			it++;
-			if (it == indices.end() ) {
-				break;
-			}
-		} else {
-			p1 = rsc->next_point();
-			temp++;
-			tmp_cout++;
-		}
+vector<Point> Sampling:: pick_points (vector<int> & indices) {
+	vector<Point> result;
+	for(vector<int>::iterator it=indices.begin();it!=indices.end();++it){
+		result.push_back(rsc->index_point(*it));
 	}
-	return current_set;
+	return result;
 }

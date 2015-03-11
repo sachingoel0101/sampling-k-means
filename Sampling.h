@@ -22,8 +22,8 @@ class Sampling {
 		Sampling (Resource *);
 		vector<Point> d2_sample (const vector<Point> &, int);
 		vector<Point> uniform_sample (int);
-		vector<int> sample_indices (discrete_distribution<>, int);
-		vector<Point> pick_points (const vector<int> &);
+		vector<int> sample_indices (vector<double> &, int);
+		vector<Point> pick_points (vector<int> &);
 	protected:
 		Resource *rsc;
 		int num_pts;
