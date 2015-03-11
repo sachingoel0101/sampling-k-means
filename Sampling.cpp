@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "Sampling.h"
+#include "omp.h"
 
 using namespace std;
 
@@ -15,13 +16,14 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 	}
 	else {
 		rsc->reset_pools();
-		vector<double> probabilities;
-		probabilities.resize (num_pts);
-		#pragma omp parallel
+		vector<double> distances;
+		distances.resize (num_pts);
+		double sum=0;
+		#pragma omp parallel reduction(+:sum)
 		{
 			double min_dist, local_dist;
 			Point p1 = rsc->index_point (0);
-			#pragma omp for schedule(dynamic)
+			#pragma omp for schedule(static)
 			for (int line_no = 0; line_no < num_pts; line_no++) {
 				p1 = rsc->index_point (line_no);
 				min_dist = p1.dist (centers[0]);
@@ -29,11 +31,50 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 					local_dist = p1.dist (centers[i]);
 					min_dist = min (min_dist, local_dist);
 				}
-				probabilities[line_no] = (min_dist * min_dist);
+				distances[line_no] = (min_dist * min_dist);
+				sum+=min_dist*min_dist;
 			}
 		}
-		discrete_distribution<> d (probabilities.begin(), probabilities.end() );
-		return pick_points (sample_indices (d, N) );
+		if(N==1){
+			discrete_distribution<> d (distances.begin(),distances.end());
+			return pick_points(sample_indices(d,1));
+		}
+		vector<vector<int>> result;
+		result.resize(omp_get_max_threads());
+		vector<int> batch_sizes;
+		batch_sizes.resize(omp_get_max_threads());
+		int total_samples=0;
+		#pragma omp parallel reduction(+:total_samples)
+		{
+			int np=omp_get_num_threads();
+			int tid=omp_get_thread_num();
+			int batch_size=num_pts/np;
+			batch_sizes[tid]=batch_size;
+			int lower=tid*batch_size;
+			int higher=(tid+1)*batch_size;
+			if(higher>num_pts) higher=num_pts;
+			double tmp_sum=0;
+			for(int i=lower;i<higher;i++){
+				tmp_sum+=distances[i];
+			}
+			discrete_distribution<> d(distances.begin()+lower,distances.begin()+higher);
+			int points_to_sample=(int) ceil(N * (tmp_sum/sum));
+			total_samples+=points_to_sample;
+			result[tid]=sample_indices(d,points_to_sample);
+		}
+		int batch_size=batch_sizes[0];
+		vector<int> points_to_pick;
+		points_to_pick.resize(total_samples);
+		int counter=0;
+		for(int i=0;i<result.size();i++){
+			vector<int> tmp=result[i];
+			int length=tmp.size();
+			for(int j=0;j<length;j++){
+				points_to_pick[counter]=tmp[j]+i*batch_size;
+				counter++;
+			}
+		}
+		return pick_points(points_to_pick);
 	}
 }
 
@@ -50,7 +91,7 @@ vector<Point> Sampling::uniform_sample (int N) {
 vector<int> Sampling:: sample_indices (discrete_distribution<> d, int N) {
 	srand (time (NULL) );
 	random_device rd;
-	mt19937 gen (rd() );
+	mt19937 gen(rd());
 	vector<int> ans;
 	while (ans.size() < N) {
 		int chosen = d (gen);
