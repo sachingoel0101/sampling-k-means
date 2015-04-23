@@ -16,16 +16,16 @@ vector<Point> Heuristic::d2_on_sample (vector<Point> &sampled_set, int k) {
 
 Point Heuristic::mean_d2_on_sample (vector<Point> &sampled_set, int k) {
 	vector<Point> level_2_sample = d2_on_sample (sampled_set, k);
-	vector<int> counts;
-	vector<Point> cluster_means;
-	vector<double> tmp;
+	vector<int> counts(k);
+	vector<Point> cluster_means(k);
+	vector<double> tmp(sampled_set[0].get_dimension());
 	for (int i = 0; i < sampled_set[0].get_dimension(); i++) {
-		tmp.push_back (0);
+		tmp[i]=0;
 	}
 	Point tmp_point (tmp);
 	for (int i = 0; i < k; i++) {
-		counts.push_back (0);
-		cluster_means.push_back (tmp_point);
+		counts[i]=0;
+		cluster_means[i]=tmp_point;
 	}
 	for (int i = 0; i < sampled_set.size(); i++) {
 		double min_dist = level_2_sample[0].dist (sampled_set[i]);

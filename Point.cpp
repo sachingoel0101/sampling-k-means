@@ -3,6 +3,11 @@
 
 using namespace std;
 
+Point::Point (){
+	dimension=0;
+	point.resize(0);
+}
+
 Point::Point (const vector<double> &__point) {
 	dimension = __point.size();
 	point.resize (dimension);

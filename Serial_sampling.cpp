@@ -15,7 +15,7 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 	}
 	else {
 		rsc->reset_pools();
-		vector<double> probabilities;
+		vector<double> probabilities(num_pts);
 		for (int line_no = 0; line_no < num_pts; line_no++) {
 			Point p1 = rsc->next_point();
 			double min_dist = p1.dist (centers[0]);
@@ -23,7 +23,7 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 				double local_dist = p1.dist (centers[i]);
 				min_dist = min (min_dist, local_dist);
 			}
-			probabilities.push_back (min_dist * min_dist);
+			probabilities[line_no]=(min_dist * min_dist);
 		}
 		vector<int> indices=sample_indices (probabilities, N);
 		return pick_points(indices);
@@ -31,9 +31,9 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 }
 
 vector<Point> Sampling::uniform_sample (int N) {
-	vector<double> probabilities;
+	vector<double> probabilities(num_pts);
 	for (int i = 0; i < num_pts; i++) {
-		probabilities.push_back (1.0);
+		probabilities[i]=1.0;
 	}
 	vector<int> indices=sample_indices(probabilities,N);
 	return pick_points(indices);
@@ -48,8 +48,9 @@ vector<int> Sampling:: sample_indices (vector<double>& probabilities, int N) {
 		probabilities[i] += probabilities[i-1];
 	}
 
-	vector<int> ans;
-	while (ans.size() < N) {
+	vector<int> ans(N);
+	int i=0;
+	while (i < N) {
 		double temp_num = (((double) gen())/max_val) *(probabilities[length-1]);		
 		int start=0,end=length-1;
 		int mid;
@@ -63,15 +64,16 @@ vector<int> Sampling:: sample_indices (vector<double>& probabilities, int N) {
 				break;
 			}
 		}
-		ans.push_back (mid);
+		ans[i]=(mid);
+		i++;
 	}
 	return ans;
 }
 
 vector<Point> Sampling:: pick_points (vector<int> & indices) {
-	vector<Point> result;
-	for(vector<int>::iterator it=indices.begin();it!=indices.end();++it){
-		result.push_back(rsc->index_point(*it));
+	vector<Point> result(indices.size());
+	for(int i=0;i<indices.size();i++){
+		result[i]=rsc->index_point(indices[i]);
 	}
 	return result;
 }

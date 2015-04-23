@@ -17,6 +17,7 @@ using namespace std;
 
 class Point {
 	public:
+		Point ();
 		Point (const vector<double> &);
 		Point (string);
 		void print (ostream &) const;

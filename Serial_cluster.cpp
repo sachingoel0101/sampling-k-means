@@ -15,13 +15,15 @@ Cluster::Cluster (Resource *__rsc, const vector<Point> &__means) {
 	}
 	dimension = tmp;
 	num_cluster = __means.size();
+	means.resize(num_cluster);
 	for (int i = 0; i < num_cluster; i++) {
-		means.push_back (__means[i]);
+		means[i]=__means[i];
 	}
 	rsc = __rsc;
 	num_pts = rsc->get_num_pts();
+	assignments.resize(num_pts);
 	for (int i = 0; i < num_pts; i++) {
-		assignments.push_back (-1);
+		assignments[i]=-1;
 	}
 	cost = DBL_MAX;
 	find_assignments();
@@ -63,16 +65,16 @@ void Cluster::print (ostream &writer) const {
 }
 
 void Cluster::iterate () {
-	vector<Point> tmp_means;
-	vector<int> tmp_point_count;
-	vector<double> tmp_point;
+	vector<Point> tmp_means(num_cluster);
+	vector<int> tmp_point_count(num_cluster);
+	vector<double> tmp_point(dimension);
 	for (int i = 0; i < dimension; i++) {
-		tmp_point.push_back (0);
+		tmp_point[i]=0;
 	}
 	Point zero_point = Point (tmp_point);
 	for (int i = 0; i < num_cluster; i++) {
-		tmp_point_count.push_back (0);
-		tmp_means.push_back (zero_point);
+		tmp_point_count[i]=0;
+		tmp_means[i]=zero_point;
 	}
 	rsc->reset_pools();
 	int index;
@@ -98,8 +100,7 @@ void Cluster::find_assignments() {
 	cost = 0;
 	assign_change = 0;
 	rsc->reset_pools();
-	vector<int> counts;
-	counts.resize (num_cluster);
+	vector<int> counts(num_cluster);
 	int index = 0;
 	double dist = 0;
 	for (int i = 0; i < num_pts; i++) {
@@ -111,11 +112,6 @@ void Cluster::find_assignments() {
 		}
 		cost += (dist * dist);
 	}
-	/**cout << "Point assignments: ";
-	for (int i = 0; i < num_cluster; i++) {
-		cout << counts[i] << " ";
-	}
-	cout << "" << endl;*/
 	cost_change = cost - prev_cost;
 }
 

@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include "Sampling.h"
 #include "omp.h"
+#include <sys/time.h>
 
 using namespace std;
 
@@ -10,14 +11,42 @@ Sampling::Sampling (Resource *__rsc) {
 	num_pts = rsc->get_num_pts();
 }
 
+
+vector<int> sample_indices_1 (vector<double> &probabilities, int N, vector<double> & rand, int start_index) {
+	int length = probabilities.size();
+	for(int i=1;i<length;i++) {
+		probabilities[i] += probabilities[i-1];
+	}
+	vector<int> ans(N);
+	int i=0;
+	while (i<N) {
+		double temp_num =  ( rand[start_index+i] )*(probabilities[length-1]);		
+		int start=0,end=length-1;
+		int mid;
+		while(start<=end) {
+			mid = (start+end)/2;
+			if(temp_num<probabilities[mid-1]) {
+				end = mid-1;
+			} else if(temp_num > probabilities [mid]){
+				start = mid+1;
+			} else {
+				break;
+			}
+		}
+		ans[i]=mid;
+		i++;
+	}
+	return ans;
+}
+
+
 vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 	if (centers.size() == 0) {
 		return uniform_sample (N);
 	}
 	else {
 		rsc->reset_pools();
-		vector<double> distances;
-		distances.resize (num_pts);
+		vector<double> distances(num_pts);
 		double sum=0;
 		#pragma omp parallel reduction(+:sum)
 		{
@@ -39,11 +68,21 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 			vector<int> indices=sample_indices(distances,1);
 			return pick_points(indices);
 		}
-		vector<vector<int>> result;
-		result.resize(omp_get_max_threads());
-		vector<int> lower_vals;
-		lower_vals.resize(omp_get_max_threads());
+		vector<vector<int>> result(omp_get_max_threads());
+		vector<int> lower_vals(omp_get_max_threads());
 		int total_samples=0;
+		// generate random numbers
+		int per_thread=2*((N/omp_get_max_threads())+1);
+		vector<double> random_nos(per_thread*omp_get_max_threads());
+		random_device rd;
+		mt19937 gen(rd());
+		unsigned int max_val=gen.max();
+		struct timeval before_ran, after_ran;
+		gettimeofday(&before_ran,NULL);
+		for(int i=0;i<2*N;i++){
+			random_nos[i]=((double) gen())/max_val;
+		}
+		gettimeofday(&after_ran,NULL);
 		#pragma omp parallel reduction(+:total_samples)
 		{
 			int np=omp_get_num_threads();
@@ -61,11 +100,13 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 				local_distances[i-lower]=distances[i];
 			}
 			int points_to_sample=(int) ceil(N * (tmp_sum/sum));
-			total_samples+=points_to_sample;
-			result[tid]=sample_indices(local_distances,points_to_sample);
+			int actual_samples=min(points_to_sample,per_thread);
+			
+			//cout<<"Sampling needed:"<<points_to_sample<<" Sampling actual:"<<per_thread<<endl;
+			result[tid]=sample_indices_1(local_distances,actual_samples,random_nos,tid*per_thread);
+			total_samples+=actual_samples;
 		}
-		vector<int> points_to_pick;
-		points_to_pick.resize(total_samples);
+		vector<int> points_to_pick(total_samples);
 		int counter=0;
 		for(int i=0;i<result.size();i++){
 			vector<int> tmp=result[i];
@@ -80,8 +121,7 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
 }
 
 vector<Point> Sampling::uniform_sample (int N) {
-	vector<double> probabilities;
-	probabilities.resize (num_pts);
+	vector<double> probabilities(num_pts);
 	for (int i = 0; i < num_pts; i++) {
 		probabilities[i] = (1.0);
 	}
@@ -97,8 +137,9 @@ vector<int> Sampling:: sample_indices (vector<double> &probabilities, int N) {
 	for(int i=1;i<length;i++) {
 		probabilities[i] += probabilities[i-1];
 	}
-	vector<int> ans;
-	while (ans.size() < N) {
+	vector<int> ans(N);
+	int i=0;
+	while (i<N) {
 		double temp_num =  ( ((double) gen())/max_val )*(probabilities[length-1]);		
 		int start=0,end=length-1;
 		int mid;
@@ -112,15 +153,16 @@ vector<int> Sampling:: sample_indices (vector<double> &probabilities, int N) {
 				break;
 			}
 		}
-		ans.push_back (mid);
+		ans[i]=mid;
+		i++;
 	}
 	return ans;
 }
 
 vector<Point> Sampling:: pick_points (vector<int> & indices) {
-	vector<Point> result;
-	for(vector<int>::iterator it=indices.begin();it!=indices.end();++it){
-		result.push_back(rsc->index_point(*it));
+	vector<Point> result(indices.size());
+	for(int i=0;i<indices.size();i++){
+		result[i]=rsc->index_point(indices[i]);
 	}
 	return result;
 }
