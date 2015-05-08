@@ -8,10 +8,9 @@ using namespace std;
 /**
  *
  * the vector point stores all the coordinates
- * dist returns euclidean distance for string 'euclidean'. More to be added
- *later.
- * add_point adds the coordinates to this
- * divide_int scales coordinates of this
+ * dist(p,measure) returns distance from p using a distance measure. Default is Euclidean
+ * add_point(p) adds p
+ * divide_int(i) scales coordinates by i
  *
  * */
 

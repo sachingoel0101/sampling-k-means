@@ -8,6 +8,13 @@
 
 using namespace std;
 
+/**
+* This is a modification over the main.cpp
+* Here you get to run every mode we have, by loading the data only once, as many times as you want.
+* Helpful for doing a variance analysis
+* This also works with any implementation you might have for Sampler,  Heuristic and Cluster.
+*/
+
 vector<Point> parse_file (string file_name) {
 	ifstream file;
 	file.open (file_name.c_str() );
@@ -26,7 +33,7 @@ int main (int argc, char *argv[]) {
 	}
 	cout << endl;
 	string method="parallel";
-	if(string(argv[0]).find("parallel")==string::npos) method="serial";
+	if(string(argv[0]).find("parallel")==string::npos) method="serial"; // we're going to write logs to a file prefixed with parallel or serial accordingly
 	string data_name=string(argv[1]);
 	vector<Point> data = parse_file ("../data/"+data_name);
 	Resource rsc (&data);
@@ -35,10 +42,12 @@ int main (int argc, char *argv[]) {
 	struct timeval init_start, init_end, iter_end;
 	string log;
 	ofstream logger;
-	for(int counter=0;counter<5;counter++){
+	for(int counter=0;counter<5;counter++){ // specify how many times you want to run every method
 		cout << counter << endl;
 		for (int mode = 0; mode < 5; mode++) {
-			logger.open("../logs/"+method+"_"+data_name+"_"+to_string(num_cluster)+"_"+to_string(mode)+"_"+to_string(counter));
+			logger.open("../logs/"+method+"_"+data_name+"_"+to_string(num_cluster)+"_"+to_string(mode)+"_"+to_string(counter)+".txt");
+			// the output file follows the format: method<parallel/serial>_data file name_num clusters_mode<0 for random, so on>_run_number
+			// rest is the same as in the main.cpp file. Just initialize properly and iterate
 			gettimeofday (&init_start, NULL);
 			vector<Point> p;
 			string log;

@@ -78,19 +78,21 @@ void Cluster::iterate () {
 	}
 	rsc->reset_pools();
 	int index;
+	// maintains sum of points and point counts to each center locally.
+	// these two are arrays of pointers to each local structure. After all, we need to combine them later.
 	vector<int *> local_tmp_point_count (omp_get_max_threads() );
 	vector<Point *> local_tmp_means (omp_get_max_threads() );
 	#pragma omp parallel private(index)
 	{
 		int np = omp_get_num_threads();
-		vector<int> local_point_count(num_cluster);
+		vector<int> local_point_count(num_cluster); // for each thread, init local point counters and summers.
 		vector<Point> local_means(num_cluster);
 		for (int i = 0; i < num_cluster; i++) {
 			local_point_count[i]=0;
 			local_means[i]=zero_point;
 		}
 		int tid = omp_get_thread_num();
-		local_tmp_point_count[tid] = local_point_count.data();
+		local_tmp_point_count[tid] = local_point_count.data(); // save the pointers to these local structures
 		local_tmp_means[tid] = local_means.data();
 		#pragma omp for schedule(static)
 		for (int i = 0 ; i < num_pts; i++) {
@@ -98,8 +100,9 @@ void Cluster::iterate () {
 			local_means[index].add_point (rsc->index_point (i) );
 			local_point_count[index] += 1;
 		}
+		// a for loop is an automatic barrier for openmp. We can be sure that all threads are done doing their work.
 		#pragma omp for schedule(static)
-		for (int i = 0; i < num_cluster; i++) {
+		for (int i = 0; i < num_cluster; i++) { // here we do the combining. Note that there are no race conditions here to same memory locations
 			for (int p = 0; p < np; p++) {
 				tmp_point_count[i] += local_tmp_point_count[p][i];
 				tmp_means[i].add_point (local_tmp_means[p][i]);
@@ -109,7 +112,9 @@ void Cluster::iterate () {
 	for (int i = 0; i < num_cluster; i++) {
 		if (tmp_point_count[i] == 0) {
 			cout << "Warning: Zero assignments during lloyd iteration" << endl;
-			exit (1);
+			tmp_means[i]=tmp_point; // set to zero
+			tmp_point_count[i]=1;
+			//exit (1);
 		}
 	}
 	means = tmp_means;
@@ -128,11 +133,13 @@ void Cluster::find_assignments() {
 	double dist = 0;
 	double tmp_cost = 0;
 	int tmp_assign_change = 0;
+	// this is done parallely here. Every core maintains its local data structures and then we merge them all.
 	vector<int *> local_tmp_counts (omp_get_max_threads() );
 	#pragma omp parallel private(index,dist) reduction(+:tmp_cost,tmp_assign_change)
 	{
+		// some primitive operations are left to openmp to handle. For example additions, for tmp_cost, tmp_assign_change.
 		int np = omp_get_num_threads();
-		vector<int> local_counts (num_cluster);
+		vector<int> local_counts (num_cluster); // but, the counts for each mean need to be handled in local arrays
 		local_tmp_counts[omp_get_thread_num()] = local_counts.data();
 		#pragma omp for schedule(static)
 		for (int i = 0; i < num_pts; i++) {
@@ -145,6 +152,7 @@ void Cluster::find_assignments() {
 			tmp_cost += (dist * dist);
 		}
 		#pragma omp for schedule(static)
+		// here we combine the results for counts. We're not really using them here. The counts array is for debugging.
 		for (int i = 0; i < num_cluster; i++) {
 			for (int p = 0; p < np; p++) {
 				counts[i] += local_tmp_counts[p][i];

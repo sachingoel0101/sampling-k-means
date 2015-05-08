@@ -28,6 +28,8 @@ Point Heuristic::mean_d2_on_sample (vector<Point> &sampled_set, int k) {
 		counts[i]=0;
 		cluster_means[i]=tmp_point;
 	}
+	// here the heuristic does things in a parallel fashion. This is exactly how we did things in Cluster.cpp
+	// maintain a local structure for each thread to keep track of cluster sums and counts
 	vector<int *> local_tmp_counts (omp_get_max_threads() );
 	vector<Point *> local_tmp_cluster_means (omp_get_max_threads() );
 	#pragma omp parallel
@@ -39,28 +41,28 @@ Point Heuristic::mean_d2_on_sample (vector<Point> &sampled_set, int k) {
 		for (int i = 0; i < k; i++) {
 			local_cluster_means[i]=tmp_point;
 		}
-		local_tmp_counts[tid] = local_counts.data();
+		local_tmp_counts[tid] = local_counts.data();  // save the pointers to local data structures
 		local_tmp_cluster_means[tid] = local_cluster_means.data();
 		double min_dist, tmp_dist;
 		int index;
 		#pragma omp for schedule(static)
 		for (int i = 0; i < sampled_set.size(); i++) {
-			min_dist = level_2_sample[0].dist (sampled_set[i]);
+			min_dist = level_2_sample[0].dist (sampled_set[i]);  // distance of each kmeans++ center from the points in sampled_set
 			index = 0;
 			for (int j = 1; j < k; j++) {
-				tmp_dist = level_2_sample[j].dist (sampled_set[i]);
+				tmp_dist = level_2_sample[j].dist (sampled_set[i]); // figure out the minimum and assign the point to that kmeans++ center
 				if (tmp_dist < min_dist) {
 					min_dist = tmp_dist;
 					index = j;
 				}
 			}
-			local_cluster_means[index].add_point (sampled_set[i]);
+			local_cluster_means[index].add_point (sampled_set[i]); // add to find centroid layer
 			local_counts[index]++;
 		}
 		#pragma omp for schedule(static)
 		for (int i = 0; i < k; i++) {
 			for (int p = 0; p < np; p++) {
-				cluster_means[i].add_point (local_tmp_cluster_means[p][i]);
+				cluster_means[i].add_point (local_tmp_cluster_means[p][i]); // combine the results for each thread
 				counts[i] += local_tmp_counts[p][i];
 			}
 		}

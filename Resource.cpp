@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Resource::Resource (string __file_name) {
+Resource::Resource (string __file_name) {  // we don't actually use this type of resource. We switched over to a complete memory based data set
 	file_name = __file_name;
 	num_pts = 0;
 	file.open (file_name.c_str() );
@@ -40,6 +40,12 @@ int Resource::get_num_pts () const {
 	return num_pts;
 }
 
+
+/**
+*
+* Access the next point. Acts as an iterator
+*
+*/
 Point Resource::next_point() {
 	if (mode && !file.eof() ) {
 		string line;
@@ -56,6 +62,11 @@ Point Resource::next_point() {
 	}
 }
 
+/**
+*
+* Access a point at a specific index
+*
+*/
 Point Resource::index_point (int index) const {
 	if (mode) {
 		cout << "Error: Invalid access from within the resource file" << endl;

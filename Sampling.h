@@ -10,10 +10,10 @@ using namespace std;
 
 /**
  *
- * d2_sample(C,N) generates N points wrt the currently selected C centers.
- * uniform_sample(N) generates N points uniform randomly.
- * sample_indices(d,N) picks N indices according to the distribution d.
- * pick_points(I) picks all the point indices present in I.
+ * d2_sample(C,N) generates N points wrt the currently selected C centers
+ * uniform_sample(N) generates N points uniform randomly
+ * sample_indices(d,N) picks N indices according to the distribution defined by the vector d
+ * pick_points(I) picks all the points in the resource corresponding to the indices present in I
  *
  * */
 

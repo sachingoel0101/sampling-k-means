@@ -8,6 +8,15 @@
 
 using namespace std;
 
+/**
+* You can use this file for any Sampling, Cluster and Heuristic implementation. Just compile it appropriately with those files.
+* See the makefile for an example of this.
+*/
+
+
+/**
+* Read the data into the array. We're going to be using it forever in our program.
+*/
 vector<Point> parse_file (string file_name) {
 	ifstream file;
 	file.open (file_name.c_str() );
@@ -44,9 +53,11 @@ int main (int argc, char *argv[]) {
 	gettimeofday (&parse_end, NULL);
 	vector<Point> p;
 	if (mode == 0) {
+		// the easiest initialization. Uniform random selection of points from the data set
 		p = sampler.uniform_sample (num_cluster);
 	}
 	else if (mode == 1) {
+		// sample points one by one for a kmeans++ initialization. Remember to do it wrt the points you've already selected
 		vector<Point> tmp;
 		for (int i = 0; i < num_cluster; i++) {
 			tmp = sampler.d2_sample (p, 1);
@@ -57,16 +68,17 @@ int main (int argc, char *argv[]) {
 		int N = stoi (argv[4]);
 		vector<Point> tmp;
 		for (int i = 0; i < num_cluster; i++) {
-			tmp = sampler.d2_sample (p, N);
-			p.push_back (h.mean_d2_on_sample (tmp, num_cluster) );
+			tmp = sampler.d2_sample (p, N); // take a D2-sample of size N, which is an input parameter. We use N=500,1000,1500
+			p.push_back (h.mean_d2_on_sample (tmp, num_cluster) ); // and find the center using our heuristic and add to the init solution
 		}
 	}
 	gettimeofday (&init_end, NULL);
-	Cluster c (&rsc, p);
+	Cluster c (&rsc, p); // initialize the cluster
 	cout << "Iteration 0:" << sqrt (c.get_cost() ) << " Assignment change:" << c.get_assign_change() << endl;
 	int iter = 1;
 	int totalPts = rsc.get_num_pts();
-	while ( ( (double) c.get_assign_change() ) / totalPts > 1e-3) {
+	// our convergence criteria is that no more than 0.1% points change their assignments. Feel free to use cost_change.
+	while ( ( (double) c.get_assign_change() ) / totalPts > 1e-1) { 
 		c.iterate();
 		cout << "Iteration " << iter << ":" << sqrt (c.get_cost() ) << " Assignment change:" << c.get_assign_change() << endl;
 		iter++;

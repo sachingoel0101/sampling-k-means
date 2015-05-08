@@ -9,8 +9,15 @@ using namespace std;
 
 /**
  *
- * scale_cluster divides all cluster means by the corresponding values in the argument vector
- * get_cost assigns the voronoi partitions and then calculates cost based on  distance measure
+ * Resource holds the file/memory pool of data set
+ * cost is the current cost of means
+ * means contains the current centers and assignments is an array containing which point is assigned to which center
+ * assign_change is the number of points which change their assignment during a lloyd iteration
+ * cost_change is the cost change during a lloyd iteration
+ * scale_cluster divides each center by the corresponding value in the argument array. This is used while updating the mean 
+ * during a lloyd iteration. We just sum all points belonging to a particular center and divide to get the centroid
+ * belongs_to finds out what center the point belongs to
+ * iterate does a lloyd iteration
  *
  **/
 

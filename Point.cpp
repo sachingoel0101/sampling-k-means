@@ -4,6 +4,7 @@
 using namespace std;
 
 Point::Point (){
+	// null point
 	dimension=0;
 	point.resize(0);
 }
@@ -21,6 +22,7 @@ Point::Point (string __line) {
 	double tmp;
 	dimension = 0;
 	while (ss >> tmp) {
+		// note that there are no checks as such to see if the string is well-formed. Assume that the data is okay
 		point.push_back (tmp);
 		dimension++;
 	}
@@ -59,7 +61,7 @@ double Point::dist (const Point &p, string dist_fxn) const {
 		vector<double> p_point = p.get_coordinates();
 		if (dist_fxn.compare ("Euclidean") == 0) {
 			for (int i = 0; i < dimension; i++) {
-				temp += (p_point[i] - point[i]) * (p_point[i] - point[i]);
+				temp += (p_point[i] - point[i]) * (p_point[i] - point[i]); // self-explanatory
 			}
 			temp = sqrt (temp);
 		} else {
@@ -79,7 +81,7 @@ void Point::add_point (const Point &p) {
 		exit (1);
 	}
 	else {
-		vector<double> tmp = p.get_coordinates();
+		vector<double> tmp = p.get_coordinates(); // get the coordinates in a vector and add
 		for (int i = 0; i < dimension; i++) {
 			point[i] += tmp[i];
 		}
@@ -92,7 +94,7 @@ void Point::divide_int (int count) {
 		exit (1);
 	} else {
 		for (int i = 0; i < dimension; i++) {
-			point[i] /= count;
+			point[i] /= count; // divide every entry in vector by count
 		}
 	}
 }
