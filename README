@@ -1,1 +1,67 @@
-./level2_whatever <path> <num cluster> <N> arbit <num points>
+Order of files you need go through:
+
+Point.cpp: Contains an abstraction of the data structure Point. Handles all distance calculations, addition of point, etc.
+
+Resource.cpp: Handles a pool of Points. Can be from a data file or an already parsed data file from a vector of Points. Provides an iterator type access to the data using next_point function
+
+Sampling.cpp: Samples from a resources a) Uniform samples b) D2-samples 
+The serial version of this is in Serial_sampling.cpp 
+
+Heuristic.cpp: Pass it a mutiset sampled using the Sampling.cpp and it returns a mean heuristic based center.
+Serial version is in Serial_heuristic.cpp
+
+Cluster.cpp: Initialize a cluster with some means, a data pool and just iterate for Lloyd.
+Serial version is in Serial_cluster.cpp
+
+main.cpp: Does an initialization and runs lloyd's algorithm. Default convergence criteria is that no more than 0.1% points change their assignments. Feel free to change it.
+This is compiled in the makefile as cluster_parallel and cluster_serial using appropriate parallelization files.
+Mode of running is this:
+
+./cluster_parallel <mode> <data path> <number of clusters> <size of multiset (needed only for mode "mean")>
+where mode can be random, kmeans++  and mean. 
+
+./cluster_serial <mode> <data path> <number of clusters> <size of multiset (needed only for mode "mean")>
+where mode can be random, kmeans++  and mean. 
+
+run.cpp: This runs five initialization all in one file. random, kmeans++, mean with N=500, 1000 and 1500
+Also, inside the code, you can change how many times they're run to do a variance analysis. Right now, the value is set to 5.
+Also, feel free to change the convergence criteria as you wish.
+Mode of running is this:
+./parallel <file_name> <num_cluster>
+./serial <file_name> <num_cluster>
+
+Note that, you must keep the data in ../data/* with name as file_name. 
+Also, keep ready a directory ../logs/ for placing all the logs of all the runs. The format of name of log files is described in run.cpp itself.
+
+
+An example:
+Suppose we have this hierarchy:
+
+data
+----mnist
+----cifar
+
+code
+----makefile
+----*
+----parallel
+----serial
+----cluster_parallel
+----cluster_serial
+
+logs
+----*
+
+
+Then, we would run as:
+
+./cluster_parallel random ../data/mnist 10 
+./cluster_parallel kmeans++ ../data/mnist 10 
+./cluster_parallel mean ../data/mnist 10 500
+ and similarly for cluster_serial
+
+ Also,
+ ./parallel mnist 10
+ ./parallel cifar 10
+
+ and similarly for serial
