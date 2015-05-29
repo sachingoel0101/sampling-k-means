@@ -89,7 +89,7 @@ vector<Point> Sampling::d2_sample (const vector<Point> &centers, int N) {
         #pragma omp for
         for(int i=0;i<N;i++){
             // first sample from the groups
-            int groupNo = sample_from_distribution(local_sums, 0, num_thread-1, rand_nos[i*2]*local_sums[num_thread-1]);
+            int groupNo = sample_from_distribution(local_sums, 0, num_thread, rand_nos[i*2]*local_sums[num_thread-1]);
             int startIndex = groupNo*per_thread;
             int endIndex = (groupNo+1)*per_thread;
             if(groupNo == num_thread - 1) endIndex = num_pts;
